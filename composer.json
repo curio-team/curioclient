@@ -1,12 +1,11 @@
 {
-    "name": "studiokaa/amoclient",
-    "description": "Client for amologin",
+    "name": "curio/sdclient",
+    "description": "Client for sdlogin",
     "type": "library",
     "license": "CC-BY-NC-SA-4.0",
     "authors": [
         {
-            "name": "Bart Roos",
-            "email": "bart@studiokaa.co"
+            "name": "Bart Roos"
         }
     ],
     "minimum-stability": "stable",
@@ -16,14 +15,17 @@
     },
     "autoload": {
         "psr-4": {
-            "StudioKaa\\Amoclient\\": "src"
+            "Curio\\SdClient\\": "src"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "StudioKaa\\Amoclient\\AmoclientServiceProvider"
+                "Curio\\SdClient\\SdClientServiceProvider"
             ]
         }
+    },
+    "require-dev": {
+        "laravel/pint": "^1.14"
     }
 }

@@ -1,8 +1,10 @@
 <?php
-namespace StudioKaa\Amoclient;
+
+namespace Curio\SdClient;
+
 use Illuminate\Support\ServiceProvider;
 
-class AmoclientServiceProvider extends ServiceProvider
+class SdClientServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
@@ -13,11 +15,11 @@ class AmoclientServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__.'/routes.php');
 
-        if(config('amoclient.use_migration') == 'yes')
-        {
+        if (config('sdclient.use_migration') == 'yes') {
             $this->loadMigrationsFrom(__DIR__.'/migrations');
         }
     }
+
     /**
      * Register the application services.
      *
@@ -26,12 +28,12 @@ class AmoclientServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/config/amoclient.php', 'amoclient'
+            __DIR__.'/config/sdclient.php', 'sdclient'
         );
 
-        $this->app->make('StudioKaa\Amoclient\AmoclientController');
-        $this->app->singleton('StudioKaa\AmoAPI', function () {
-            return new AmoAPI();
+        $this->app->make('Curio\SdClient\SdClientController');
+        $this->app->singleton('Curio\SdApi', function () {
+            return new SdApi();
         });
     }
 }

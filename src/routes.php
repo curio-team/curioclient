@@ -1,7 +1,7 @@
 <?php
 
 Route::group(['middleware' => ['web']], function () {
-	Route::get('amoclient/redirect', 'StudioKaa\Amoclient\AmoclientController@redirect');
-	Route::get('amoclient/callback', 'StudioKaa\Amoclient\AmoclientController@callback');
-	Route::get('amoclient/logout', 'StudioKaa\Amoclient\AmoclientController@logout');
+    Route::get('sdclient/redirect', 'Curio\SdClient\SdClientController@redirect');
+    Route::get('sdclient/callback', 'Curio\SdClient\SdClientController@callback');
+    Route::get('sdclient/logout', 'Curio\SdClient\SdClientController@logout');
 });

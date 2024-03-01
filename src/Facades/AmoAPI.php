@@ -1,12 +1,13 @@
 <?php
 
-namespace StudioKaa\Amoclient\Facades;
+namespace Curio\SdClient\Facades;
+
 use Illuminate\Support\Facades\Facade;
 
-class AmoAPI extends Facade
+class SdApi extends Facade
 {
-	protected static function getFacadeAccessor()
-	{
-		return 'StudioKaa\AmoAPI';
-	}
+    protected static function getFacadeAccessor()
+    {
+        return 'Curio\SdApi';
+    }
 }
