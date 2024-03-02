@@ -43,6 +43,12 @@ class SdClientController extends Controller
 
         $http = new \GuzzleHttp\Client($config);
 
+        if (isset($request->error)) {
+            return redirect('/sdclient/error')
+                ->with('sdclient.error', $request->error)
+                ->with('sdclient.error_description', $request->error_description);
+        }
+
         try {
             //Exchange authcode for tokens
             $response = $http->post("$root/oauth/token", [
@@ -98,7 +104,6 @@ class SdClientController extends Controller
 
             return redirect('/sdclient/ready');
         } catch (\GuzzleHttp\Exception\BadResponseException $e) {
-            Log::error('Unable to retrieve access token: '.$e->getResponse()->getBody());
             abort(500, 'Unable to retrieve access token: '.$e->getResponse()->getBody());
         }
     }
