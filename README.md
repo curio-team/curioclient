@@ -1,12 +1,13 @@
-# SD Client
+# 🔑 SD Client
 
-A Laravel package for use with the [sdlogin](https://github.com/curio-team/sdlogin) OpenID connect server. Now using curio.codes!
+A Laravel package for use with the [🔐 sdlogin OpenID connect server](https://github.com/curio-team/sdlogin).
 
-## Installation
+## 🚀 Using this package
 
-__‼__ Please make sure your app is using _https_, to prevent unwanted exposure of token, secrets, etc.
+> [!WARNING]
+> Please make sure your app is using _https_, to prevent unwanted exposure of token, secrets, etc.
 
-To use sdclient in your project:
+To use `sdclient` in your project:
 
 1. In your laravel project run: `composer require curio/sdclient`
 
@@ -32,99 +33,113 @@ To use sdclient in your project:
 
 3. Alter your User model and add the line: `public $incrementing = false;`
 
-4. _(Recommended)_ Remove any default users-migration from your app, because SdClient will conflict with it. Do _not_ remove the user-model. If you want to keep using your own migration, in your .env file set: `SD_USE_MIGRATION=no`
+4. _(Recommended)_ Remove any default users-migration from your app, because SdClient will conflict with it. Do _not_ remove the user-model. If you want to keep using your own migration, in your .env file set: `SD_USE_MIGRATION=no`.
+
+    _Note that (unlike default user migrations) SD users have a string as their primary key. Any foreign keys pointing to the users table should also be of type string._
 
 5. Lastly, run `php artisan migrate`.
 
-## Usage
+Read the required implementations below to see how to redirect your users to the login-server and how to catch the after-login redirect.
 
-### Logging in
+## 🔨 Required implementations
 
-Redirect your users to `http://yoursite/sdclient/redirect`, this will send your user to _amologin_ for authentication.
+> [!NOTE]
+> SdClient is not compatible in combination with Laravel's `make:auth` command.
 
-You should have a named route that will serve your users with a button or direct redirect to `/sdclient/redirect.`
+### 1️⃣ Letting your users login
 
-Example;
+Redirect your users to `http://yoursite/sdclient/redirect`. From here `sdclient` will send your user to _sdlogin_ for authentication.
 
-```
-Route::get('/login', function(){
- return redirect('/sdclient/redirect');
-})->name('login');
+> **Example:**
+>
+> Implement a named route that will serve your users with a button or direct redirect to `/sdclient/redirect.`:
+>
+> ```php
+> Route::get('/login', function() {
+>   return redirect('/sdclient/redirect');
+> })->name('login');
+> ```
 
-```
+### 2️⃣ Catch the after-login redirect
 
-### Catch the after-login redirect
+The _sdlogin_ server will ask the user if they want to allow your application to access their data. After the user has made their choice, they will be redirected to the `/sdclient/ready` or `/sdclient/error` route in your application.
 
-After a succesfull login, SdClient will redirect you to `/sdclient/ready`. You may define a route in your applications `routes/web.php` file to handle this.
+#### Handling success (`/sdclient/ready`)
 
-Example;
+After confirming a successful login with _sdlogin_, the `sdclient` package will redirect you to `/sdclient/ready`.
 
-```
-Route::get('/sdclient/ready', function(){
- return redirect('/educations');
-})
-```
+> **Example:**
+>
+> Define a route in your applications `routes/web.php` file to handle this:
+>
+> ```php
+> Route::get('/sdclient/ready', function() {
+>   return redirect('/educations');
+> })
+> ```
 
-### Logging out
+#### Handling errors (`/sdclient/error`)
+
+If the user denies access to your application, or if something else goes wrong, the user will be redirected to `/sdclient/error`. The error and error_description will be stored in the session (as `sdclient.error` and `sdclient.error_description` respectively).
+
+> **Example:**
+>
+> Define a route in your applications `routes/web.php` file to handle this:
+>
+> ```php
+> Route::get('/sdclient/error', function() {
+>   $error = session('sdclient.error');
+>   $error_description = session('sdclient.error_description');
+>
+>   return view('errors.sdclient', compact('error', 'error_description'));
+>   // or simply:
+>   // return 'There was an error signing in: ' . $error_description . ' (' . $error . ')<br><a href="/login">Try again</a>';
+> })
+> ```
+
+### 3️⃣ Logging out
 
 Send your user to `/sdclient/logout`.
-_Please note:_ a real logout cannot be accomplished at this time. If you log-out of your app, but are still logged-in to the _amologin_-server, this will have no effect.
 
-### Laravel's `make:auth`
+> [!NOTE]
+> A real logout cannot be accomplished at this time. If you log-out of your app, but are still logged-in to the _sdlogin_-server, this will have no effect.
+> This is because the _sdlogin_-server is a single-sign-on server, and is designed to keep you logged in to all applications that use it.
 
-Don't use this in combination with SdClient.
-
-## SdApi
+## 📈 SdApi
 
 Apart from being the central login-server, _login.amo.rocks_ also exposes an api. Please note this api is currently undocumented, although there are options to explore the api:
 
-* Refer to _amologin_'s [routes/api.php](https://github.com/Curio/amologin/blob/master/routes/api.php) file.
-* Play around at [apitest.amo.rocks](https://apitest.amo.rocks/).
+* Refer to _sdlogin_'s [routes/api.php](https://github.com/curio-team/sdlogin/blob/main/routes/api.php) file.
+* Play around at [apitest.curio.codes](https://apitest.curio.codes/).
 
 ### SdClient API Interface
 
-An example of calling the api through SdClient;
+An example of calling the api through SdClient:
 
-```
+```php
 namespace App\Http\Controllers;
+
 use \Curio\SdClient\Facades\SdApi;
 
 class MyController extends Controller
 {
- //This method is protected by the auth-middleware
- public function index()
- {
-   $users = SdApi::get('users');
-   return view('users.index')->with(compact('users'));
- }
+  // This method should be protected by the auth-middleware
+  public function index()
+  {
+    $users = SdApi::get('users');
+    return view('users.index')->with(compact('users'));
+  }
 }
-
 ```
 
 **Known 'bug':** Currently the SdApi class doesn't check if the token expired but just refreshes it anytime you use it.
 
 ### `SdApi::get($endpoint)`
 
-* Performs an HTTP-request like `GET https://api.amo.rocks/$endpoint`.
-* This method relies on a user being authenticated through the sdclient first. Please do call this method only from routes and/or controllers protected by the _auth_ middlware.
+* Performs an HTTP-request like `GET https://api.curio.codes/$endpoint`.
+* This method relies on a user being authenticated through the `sdclient` first. Only call this method from routes and/or controllers protected by the _auth_ middleware.
 * Returns a Laravel-collection
 
-## Contributing
+## 👷‍♀️ Contributing
 
-1. Clone this repository to your device
-2. Inside the root of this repository run `composer install`
-3. Create a test project in which you will use this package (Follow [Usage](#usage) instructions above)
-4. Add the package locally using the following additions to your composer.json:
- ```json
-  "repositories": [
-   {
-    "type": "path",
-    "url": "../sdclient"
-   }
-  ],
- ```
-
-	* __Note:__ `../sdclient` should point to where you cloned this package
-5. Run `composer require "curio/sdclient @dev"` inside the test project
-
-You can now test and modify this package. Changes will immediately be reflected in the test project.
+We welcome contributions from the community. Please see the [contributing guide](CONTRIBUTING.md) for more information.
