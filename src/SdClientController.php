@@ -94,6 +94,10 @@ class SdClientController extends Controller
                 $user->email = $token_user->email;
                 $user->type = $token_user->type;
                 $user->save();
+            } else {
+                // Update the user name if exists
+                $user->name = $token_user->name;
+                $user->save();
             }
 
             Auth::login($user);
